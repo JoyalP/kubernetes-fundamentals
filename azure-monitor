@@ -1,0 +1,51 @@
+# Variables
+RESOURCE_GROUP="your-resource-group-name"
+
+# Get list of all VM names
+VM_LIST=$(az vm list -g $RESOURCE_GROUP --query "[].name" -o tsv)
+
+# Loop through each VM
+for VM in $VM_LIST
+do
+    echo "Processing VM: $VM"
+    
+    # Install Azure Monitor Agent Extension if not already installed
+    az vm extension set \
+        --name AzureMonitorWindowsAgent \
+        --publisher Microsoft.Azure.Monitor \
+        --resource-group $RESOURCE_GROUP \
+        --vm-name $VM \
+        --force-update-tag $(date +%s) || echo "Extension might already exist for $VM"
+
+    # Enable VM Insights (Azure Monitor)
+    az monitor vm insights enable --resource $VM --resource-group $RESOURCE_GROUP --resource-type "Microsoft.Compute/virtualMachines"
+
+    echo "Completed $VM"
+done
+
+
+Linux VMs: Replace AzureMonitorWindowsAgent with AzureMonitorLinuxAgent.
+
+This script assumes Windows VMs by default.
+If you have mixed Linux/Windows VMs, you’ll need to detect OS type and apply the right extension.
+
+The --force-update-tag ensures extension gets installed fresh if needed.
+
+The az monitor vm insights enable automatically configures monitoring with minimal manual setup.
+
+# Detect OS type
+OS_TYPE=$(az vm get-instance-view -g $RESOURCE_GROUP -n $VM --query "storageProfile.osDisk.osType" -o tsv)
+
+if [[ "$OS_TYPE" == "Linux" ]]; then
+    EXT_NAME="AzureMonitorLinuxAgent"
+else
+    EXT_NAME="AzureMonitorWindowsAgent"
+fi
+
+# Install proper extension
+az vm extension set \
+    --name $EXT_NAME \
+    --publisher Microsoft.Azure.Monitor \
+    --resource-group $RESOURCE_GROUP \
+    --vm-name $VM \
+    --force-update-tag $(date +%s)
