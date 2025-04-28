@@ -1,0 +1,28 @@
+# Set variables
+RESOURCE_GROUP="your-resource-group-name"
+STORAGE_ACCOUNT="your-storage-account-name"
+NSG_FLOW_LOG_RETENTION_DAYS=30
+LOCATION="eastus"  # or your NSG location
+
+# Get the storage account ID
+STORAGE_ID=$(az storage account show --name $STORAGE_ACCOUNT --resource-group $RESOURCE_GROUP --query id --output tsv)
+
+# Get list of NSGs
+NSG_LIST=$(az network nsg list --resource-group $RESOURCE_GROUP --query "[].name" --output tsv)
+
+# Enable NSG flow logs for each NSG
+for NSG in $NSG_LIST; do
+    echo "Enabling flow logs for NSG: $NSG"
+    
+    az network watcher flow-log configure \
+      --enabled true \
+      --resource-group $RESOURCE_GROUP \
+      --nsg $NSG \
+      --storage-account $STORAGE_ID \
+      --retention  $NSG_FLOW_LOG_RETENTION_DAYS \
+      --location $LOCATION
+      
+    echo "Flow logs enabled for $NSG"
+done
+
+
