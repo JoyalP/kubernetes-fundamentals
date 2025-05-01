@@ -1,0 +1,17 @@
+az vm list --query "[].{name:name, rg:resourceGroup}" -o table
+
+
+#!/bin/bash
+
+# Get all VMs in the current subscription
+vms=$(az vm list --query "[].{name:name, rg:resourceGroup}" -o tsv)
+
+for vm in $vms; do
+  vm_name=$(echo $vm | awk '{print $1}')
+  rg_name=$(echo $vm | awk '{print $2}')
+
+  echo "Enabling monitoring for VM: $vm_name in RG: $rg_name"
+
+  az monitor vm insights enable --resource-group "$rg_name" --vm-name "$vm_name" --only-show-errors
+done
+
