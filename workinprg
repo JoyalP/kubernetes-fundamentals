@@ -28,3 +28,60 @@ while read vm_name rg_name; do
     --vm-name "$vm_name" \
     --only-show-errors
 done
+
+
+-----
+
+
+#!/bin/bash
+
+# --- CONFIGURATION ---
+workspace_rg="vm-monitoring-rg"         # Resource Group to create/use
+workspace_name="vm-monitoring-ws"       # Workspace name
+location="eastus"                       # Azure region (must match VM regions)
+
+echo "Checking if resource group exists..."
+az group show --name "$workspace_rg" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "Creating resource group: $workspace_rg"
+  az group create --name "$workspace_rg" --location "$location"
+fi
+
+echo "Checking if Log Analytics workspace exists..."
+az monitor log-analytics workspace show --resource-group "$workspace_rg" --workspace-name "$workspace_name" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "Creating Log Analytics workspace: $workspace_name"
+  az monitor log-analytics workspace create \
+    --resource-group "$workspace_rg" \
+    --workspace-name "$workspace_name" \
+    --location "$location"
+else
+  echo "Workspace already exists."
+fi
+
+# Get workspace ID
+workspace_id=$(az monitor log-analytics workspace show \
+  --resource-group "$workspace_rg" \
+  --workspace-name "$workspace_name" \
+  --query id -o tsv)
+
+echo "Workspace ID: $workspace_id"
+
+# --- Enable Monitoring on All VMs ---
+echo "Fetching all VMs in current subscription..."
+
+az vm list --query "[].{name:name, rg:resourceGroup}" -o tsv |
+while read vm_name rg_name; do
+  echo "Installing monitoring agent on $vm_name (RG: $rg_name)..."
+
+  az vm extension set \
+    --resource-group "$rg_name" \
+    --vm-name "$vm_name" \
+    --name OmsAgentForLinux \
+    --publisher Microsoft.EnterpriseCloud.Monitoring \
+    --settings "{\"workspaceId\":\"$workspace_id\"}" \
+    --only-show-errors \
+    --no-wait
+done
+
+echo "✅ Monitoring agent installation triggered for all VMs."
