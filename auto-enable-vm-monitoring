@@ -1,0 +1,26 @@
+# Replace these values
+subscription_id="<your-subscription-id>"
+workspace_rg="<workspace-resource-group>"
+workspace_name="<loganalytics-workspace-name>"
+
+# Get full workspace resource ID
+workspace_id=$(az monitor log-analytics workspace show \
+  --resource-group "$workspace_rg" \
+  --workspace-name "$workspace_name" \
+  --query id -o tsv)
+
+# Assign built-in policy
+az policy assignment create \
+  --name "Enable-Monitoring-For-VMs" \
+  --scope "/subscriptions/$subscription_id" \
+  --policy "b24988ac-6180-42a0-ab88-20f7382dd24c" \
+  --params "{\"logAnalytics\": {\"value\": \"$workspace_id\"}}" \
+  --assign-identity
+
+Native, no-code enforcement
+
+Auto-onboarding of future VMs
+
+Easy to scale and audit
+
+Use remediation tasks to cover existing VMs too
