@@ -15,3 +15,16 @@ for vm in $vms; do
   az monitor vm insights enable --resource-group "$rg_name" --vm-name "$vm_name" --only-show-errors
 done
 
+#!/bin/bash
+
+# Get all VMs across the current subscription with name and resource group
+az vm list --query "[].{name:name, rg:resourceGroup}" -o tsv |
+while read vm_name rg_name; do
+  echo "Enabling monitoring for VM: $vm_name in RG: $rg_name"
+
+  # Enable Azure Monitor VM Insights
+  az monitor vm insights enable \
+    --resource-group "$rg_name" \
+    --vm-name "$vm_name" \
+    --only-show-errors
+done
