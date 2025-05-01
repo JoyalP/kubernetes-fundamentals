@@ -85,3 +85,8 @@ while read vm_name rg_name; do
 done
 
 echo "✅ Monitoring agent installation triggered for all VMs."
+
+
+
+az role assignment list --assignee $(az account show --query user.name -o tsv) -o table
+
