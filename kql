@@ -15,3 +15,8 @@ AzureNetworkAnalytics_CL
 | where Subnet_s contains "x16p1erps4h"
 | project TimeGenerated, FlowType_s, Direction_s, VMs_s, Subnet_s, NSGRule_s, Action_s
 | order by TimeGenerated desc
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"  // Filter for your subnet
+| project TimeGenerated, SrcIP_s, DestIP_s, SourcePortRange_s, DestinationPortRange_s, Protocol_s, Direction_s, NSGRule_s, Access_s
+| order by TimeGenerated desc
