@@ -1,0 +1,11 @@
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"  // Replace or remove as needed
+| summarize Count = count() by bin(TimeGenerated, 1h), Action_s
+| order by TimeGenerated desc
+
+
+AzureDiagnostics
+| where ResourceType == "NETWORKSECURITYGROUPS"
+| where SubnetName_s contains "x16p1erps4h"
+| project TimeGenerated, src_ip_s, dest_ip_s, src_port_s, dest_port_s, protocol_s, direction_s, action_s
+| order by TimeGenerated desc
