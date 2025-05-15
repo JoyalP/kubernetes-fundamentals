@@ -1,1 +1,30 @@
+🔹 1. Top Destination Ports Used (Allowed and Denied Traffic Combined)
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| summarize Hits = count() by DestinationPortRange_s
+| order by Hits desc
+
+Top Destination Ports for Only Denied Traffic
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| where Access_s == "Deny"
+| summarize Hits = count() by DestinationPortRange_s
+| order by Hits desc
+
+Top Source Ports (Optional, but typically dynamic/random)
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| summarize Hits = count() by SourcePortRange_s
+| order by Hits desc
+
+Top Destination Ports with Action Split (Allow vs Deny)
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| summarize Hits = count() by DestinationPortRange_s, Access_s
+| order by Hits desc
+
 
