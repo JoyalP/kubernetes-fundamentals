@@ -44,3 +44,12 @@ AzureNetworkAnalytics_CL
 | where Subnet_s contains "x16p1erps4h" and Access_s == "Allow"
 | summarize Hits = count() by DestinationPortRange_s
 | order by Hits desc
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| take 1
+
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| project TimeGenerated, SrcIP_s, DestIP_s, [CorrectSourcePortField], [CorrectDestPortField], Protocol_s, Direction_s, NSGRule_s, Access_s
+| order by TimeGenerated desc
