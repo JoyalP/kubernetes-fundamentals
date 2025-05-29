@@ -1,0 +1,7 @@
+AzureNetworkAnalytics_CL
+| where Subnet_s contains "x16p1erps4h"
+| summarize Hits = count() by DestPort_d
+| order by Hits desc
+| take 20
+
+
